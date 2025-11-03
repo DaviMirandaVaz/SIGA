@@ -1,0 +1,86 @@
+/.idea/
+# Build folders
+/bin/
+/obj/
+/Debug/
+/Release/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Logs / temp / OS
+*.log
+*.tmp
+*.DS_Store
+Thumbs.db
+
+# Git itself
+.gitignore
+
+# Local config
+appsettings.json
+/png/
+
+# ========================
+# Build / Target folders
+# ========================
+/target/
+build/
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ========================
+# Maven Wrapper
+# ========================
+.mvn/wrapper/maven-wrapper.jar
+
+# ========================
+# IDEs
+# ========================
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Eclipse / STS
+.classpath
+.factorypath
+.project
+.settings/
+.apt_generated
+.springBeans
+.sts4-cache
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# VS Code
+.vscode/
+
+# ========================
+# Logs / temp / OS files
+# ========================
+
+*.class
+*.swp
+
+
+# ========================
+# Local config
+# ========================
+application.properties
+
+/java/gestao-cafe/target/
+/mysql/
