@@ -1,5 +1,6 @@
 package br.com.nextdev.gestao_cafe.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,7 +27,9 @@ public class ProdutoIntermedio {
 
     @ManyToOne
     @JoinColumn(name = "idFazenda", nullable = false)
+    @JsonBackReference("fazenda-produtoIntermedio")
     private Fazenda fazenda;
+
 
     public enum Tipo { ANIMAL, LAVOURA, PLANTAÇÃO }
     public enum Status { ATIVO, VENDIDO, MORTE, COLHIDO }
@@ -48,4 +51,7 @@ public class ProdutoIntermedio {
     public void setStatus(Status status) { this.status = status; }
     public Fazenda getFazenda() { return fazenda; }
     public void setFazenda(Fazenda fazenda) { this.fazenda = fazenda; }
+    public Integer getIdFazenda() {
+        return fazenda != null ? fazenda.getIdFazenda() : null;
+    }
 }

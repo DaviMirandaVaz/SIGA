@@ -34,8 +34,12 @@ public class FazendaController {
     }
 
     // ✅ Cadastrar fazenda
-    @PostMapping
+    @PostMapping(
+            consumes = "application/json",
+            produces = "application/json"
+    )
     public Fazenda cadastrar(@RequestBody Fazenda fazenda) {
+        System.out.println("Recebendo fazenda: " + fazenda.getNome());
         return fazendaRepository.save(fazenda);
     }
 

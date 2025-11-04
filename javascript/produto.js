@@ -104,16 +104,25 @@ document.addEventListener("DOMContentLoaded", async function () {
     let url = '';
 
     if (tipoProduto === 'entrada') {
-      dados = {
-        nomeProduto,
-        tipo: document.getElementById('tipo_entrada').value || 'OUTRO',
-        quantidade: (parseFloat(document.getElementById('quantidade_entrada').value) || 0).toString(),
-        unidadeMedida: document.getElementById('unidade_medida_entrada').value || null,
-        valorUnitario: (parseFloat(document.getElementById('valor_unitario').value) || 0).toString(),
-        dataCompra: document.getElementById('data_compra').value || null,
-        fazenda: { idFazenda: parseInt(fazendaId, 10) }
-      };
-      url = 'http://localhost:8080/api/produtosEntrada';
+  let tipoSelecionado = document.getElementById('tipo_entrada').value || 'OUTRO';
+
+  // 🔹 Verifica se o tipo é aceito pelo backend
+  const tiposValidos = ['ADUBO', 'SEMENTE', 'RAÇÃO', 'MEDICAMENTO', 'OUTRO'];
+  if (!tiposValidos.includes(tipoSelecionado)) {
+    tipoSelecionado = 'OUTRO';
+  }
+
+  dados = {
+    nomeProduto,
+    tipo: tipoSelecionado,
+    quantidade: (parseFloat(document.getElementById('quantidade_entrada').value) || 0).toString(),
+    unidadeMedida: document.getElementById('unidade_medida_entrada').value || null,
+    valorUnitario: (parseFloat(document.getElementById('valor_unitario').value) || 0).toString(),
+    dataCompra: document.getElementById('data_compra').value || null,
+    fazenda: { idFazenda: parseInt(fazendaId, 10) }
+  };
+
+  url = 'http://localhost:8080/api/produtosEntrada';
 
     } else if (tipoProduto === 'intermedio') {
       // mapear tipo que o backend espera

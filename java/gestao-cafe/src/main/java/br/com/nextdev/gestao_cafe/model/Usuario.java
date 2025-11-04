@@ -1,11 +1,13 @@
 package br.com.nextdev.gestao_cafe.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
 @Table(name = "Usuario")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Usuario {
 
     @Id
@@ -25,9 +27,26 @@ public class Usuario {
     @Column(length = 20)
     private TipoUsuario tipoUsuario = TipoUsuario.FUNCIONARIO;
 
+    // 🔹 Fazendas do usuário dono
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnoreProperties("usuario") // 🔥 Evita recursão infinita
+    @JsonIgnoreProperties({"usuario", "usuarioFazendas"})
     private List<Fazenda> fazendas;
+
+    // 🔹 Vínculos (funcionário x fazenda)
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"usuario"})
+    private List<UsuarioFazenda> usuarioFazendas;
+
+    // 🔹 Usuário dono
+    @ManyToOne
+    @JoinColumn(name = "id_usuario_dono")
+    @JsonIgnoreProperties({"usuariosSubordinados", "fazendas", "usuarioFazendas"})
+    private Usuario usuarioDono;
+
+    // 🔹 Usuários subordinados
+    @OneToMany(mappedBy = "usuarioDono")
+    @JsonIgnoreProperties({"usuarioDono", "fazendas", "usuarioFazendas"})
+    private List<Usuario> usuariosSubordinados;
 
     public enum TipoUsuario {
         ADMIN, FUNCIONARIO, GERENTE
@@ -51,4 +70,13 @@ public class Usuario {
 
     public List<Fazenda> getFazendas() { return fazendas; }
     public void setFazendas(List<Fazenda> fazendas) { this.fazendas = fazendas; }
+
+    public List<UsuarioFazenda> getUsuarioFazendas() { return usuarioFazendas; }
+    public void setUsuarioFazendas(List<UsuarioFazenda> usuarioFazendas) { this.usuarioFazendas = usuarioFazendas; }
+
+    public Usuario getUsuarioDono() { return usuarioDono; }
+    public void setUsuarioDono(Usuario usuarioDono) { this.usuarioDono = usuarioDono; }
+
+    public List<Usuario> getUsuariosSubordinados() { return usuariosSubordinados; }
+    public void setUsuariosSubordinados(List<Usuario> usuariosSubordinados) { this.usuariosSubordinados = usuariosSubordinados; }
 }

@@ -40,15 +40,29 @@ public class UsuarioController {
     @PutMapping("/{id}")
     public Usuario atualizarUsuario(@PathVariable Integer id, @RequestBody Usuario usuarioAtualizado) {
         Usuario usuario = usuarioRepository.findById(id).orElse(null);
+
         if (usuario != null) {
             usuario.setNome(usuarioAtualizado.getNome());
             usuario.setEmail(usuarioAtualizado.getEmail());
-            usuario.setSenha(usuarioAtualizado.getSenha());
             usuario.setTipoUsuario(usuarioAtualizado.getTipoUsuario());
+
+            // ⚠️ Só atualiza a senha se o campo vier preenchido
+            if (usuarioAtualizado.getSenha() != null && !usuarioAtualizado.getSenha().isBlank()) {
+                usuario.setSenha(usuarioAtualizado.getSenha());
+            }
+
             return usuarioRepository.save(usuario);
         }
+
         return null;
     }
+
+
+    @GetMapping("/subordinados/{idDono}")
+    public List<Usuario> listarSubordinados(@PathVariable Integer idDono) {
+        return usuarioRepository.findByUsuarioDono_IdUsuario(idDono);
+    }
+
 
     @GetMapping("/porDono/{idDono}")
     public List<Fazenda> listarFazendasPorDono(@PathVariable Integer idDono) {

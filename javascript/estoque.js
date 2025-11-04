@@ -11,13 +11,33 @@ async function carregarTodosProdutos() {
   }
 
   try {
+    // 🔹 1. Buscar as fazendas do usuário logado
+    const fazendasResp = await fetch(`http://localhost:8080/api/fazendas/porDono/${usuarioId}`);
+    if (!fazendasResp.ok) throw new Error("Erro ao buscar fazendas do usuário.");
+    const fazendasUsuario = await fazendasResp.json();
+    const idsFazendas = fazendasUsuario.map(f => f.idFazenda);
+    console.log("✅ Fazendas do usuário:", fazendasUsuario);
+
+    // 🔹 2. Buscar todos os produtos
     const [entradas, intermedios, saidas] = await Promise.all([
       carregar("entrada", "http://localhost:8080/api/produtosEntrada"),
       carregar("intermedio", "http://localhost:8080/api/produtosIntermedios"),
       carregar("saida", "http://localhost:8080/api/produtosSaida"),
     ]);
 
-    produtosCarregados = [...entradas, ...intermedios, ...saidas];
+    console.log("📦 Produtos Entrada:", entradas);
+    console.log("📦 Produtos Intermedios:", intermedios);
+    console.log("📦 Produtos Saida:", saidas);
+
+    // 🔹 3. Filtrar produtos apenas das fazendas do usuário
+    const todosProdutos = [...entradas, ...intermedios, ...saidas].filter(
+      p => idsFazendas.includes(p.idFazenda)
+    );
+
+    console.log("🎯 Produtos filtrados:", todosProdutos);
+
+
+    produtosCarregados = todosProdutos;
     renderizarProdutos(produtosCarregados);
   } catch (err) {
     console.error("Erro geral ao carregar produtos:", err);
@@ -25,24 +45,21 @@ async function carregarTodosProdutos() {
   }
 }
 
+
+
+
 async function carregar(tipo, url) {
   try {
     const resp = await fetch(url);
     if (!resp.ok) throw new Error(`Erro ao buscar ${tipo}: ${resp.status}`);
-    let dados = await resp.json();
-
-
-    // 🔹 Filtra apenas produtos da fazenda logada
-    const usuarioId = parseInt(localStorage.getItem("USUARIO_ID"), 10);
-    dados = dados.filter(p => p.fazenda?.usuario?.idUsuario === usuarioId);
-
-
+    const dados = await resp.json();
     return dados.map(p => ({ ...p, tipoProduto: tipo }));
   } catch (e) {
     console.error(`Erro ao buscar ${tipo}:`, e);
     return [];
   }
 }
+
 
 function renderizarProdutos(produtos) {
   const tabelaEntrada = document.getElementById("lista-produtos-entrada");
@@ -87,7 +104,7 @@ function renderizarProdutos(produtos) {
         </td>
       `;
       tabelaSaida.appendChild(tr);
-    } 
+    }
     else if (tipo === "entrada") {
       tr.innerHTML = `
         <td>${p.nomeProduto || "-"}</td>
@@ -105,7 +122,7 @@ function renderizarProdutos(produtos) {
         </td>
       `;
       tabelaEntrada.appendChild(tr);
-    } 
+    }
     else if (tipo === "intermedio") {
       tr.innerHTML = `
         <td>${p.nomeProduto || "-"}</td>
@@ -123,7 +140,7 @@ function renderizarProdutos(produtos) {
         </td>
       `;
       tabelaIntermedio.appendChild(tr);
-    } 
+    }
     else {
       console.warn("⚠️ Tipo de produto desconhecido:", p);
     }
@@ -185,14 +202,14 @@ function abrirEdicao(tipo, id) {
     });
     selectSubtipo.value = produto.tipo || "";
 
-  // 🔹 Intermediário → Tipos de produção
+    // 🔹 Intermediário → Tipos de produção
   } else if (tipo === "intermedio") {
     ["ANIMAL", "LAVOURA", "PLANTAÇÃO"].forEach(op => {
       selectSubtipo.innerHTML += `<option value="${op}">${op}</option>`;
     });
     selectSubtipo.value = produto.tipo || "";
 
-  // 🔹 Saída → Unidade de medida (editável)
+    // 🔹 Saída → Unidade de medida (editável)
   } else if (tipo === "saida") {
     ["KG", "L", "SACA", "TONELADA"].forEach(op => {
       selectSubtipo.innerHTML += `<option value="${op}">${op}</option>`;

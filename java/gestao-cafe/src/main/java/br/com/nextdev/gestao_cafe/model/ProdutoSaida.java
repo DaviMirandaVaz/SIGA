@@ -1,5 +1,6 @@
 package br.com.nextdev.gestao_cafe.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,7 +21,9 @@ public class ProdutoSaida {
 
     @ManyToOne
     @JoinColumn(name = "idFazenda", nullable = false)
+    @JsonBackReference("fazenda-produtoSaida")
     private Fazenda fazenda;
+
 
     // Getters e Setters
     public Integer getIdProdutoSaida() { return idProdutoSaida; }
@@ -37,5 +40,8 @@ public class ProdutoSaida {
     public void setDataVenda(LocalDate dataVenda) { this.dataVenda = dataVenda; }
     public Fazenda getFazenda() { return fazenda; }
     public void setFazenda(Fazenda fazenda) { this.fazenda = fazenda; }
+    public Integer getIdFazenda() {
+        return fazenda != null ? fazenda.getIdFazenda() : null;
+    }
 }
 
