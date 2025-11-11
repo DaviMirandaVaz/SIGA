@@ -1,0 +1,64 @@
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #f5f7f5;
+  color: #333;
+}
+
+.navbar {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.nav-link {
+  color: #333;
+  margin: 0 10px;
+  transition: color 0.3s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: #2e7d32;
+}
+
+.content-panel {
+  background: #fff;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+  font-weight: 600;
+  color: #2e7d32;
+  border-bottom: 2px solid #c8e6c9;
+  padding-bottom: 0.5rem;
+}
+
+.table thead {
+  color: #fff;
+}
+
+.table-success {
+  background-color: #4caf50 !important;
+}
+
+.table-danger {
+  background-color: #f44336 !important;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f1f8e9 !important;
+}
+
+.btn-success {
+  background-color: #2e7d32;
+  border-color: #2e7d32;
+}
+
+.btn-success:hover {
+  background-color: #256427;
+  border-color: #256427;
+}
+
+.btn-danger:hover {
+  background-color: #c62828;
+}

@@ -4,6 +4,44 @@ let produtosCarregados = [];
 window.addEventListener("DOMContentLoaded", carregarTodosProdutos);
 
 
+
+//seletor fazenda
+function filtrarPorFazenda() {
+  const seletor = document.getElementById("filtro-fazenda");
+  const fazendaSelecionada = seletor.value;
+
+  if (fazendaSelecionada === "todas") {
+    renderizarProdutos(produtosCarregados);
+  } else {
+    const produtosFiltrados = produtosCarregados.filter(
+      p => String(p.fazenda?.idFazenda) === String(fazendaSelecionada)
+    );
+    renderizarProdutos(produtosFiltrados);
+  }
+}
+
+//filtrar produtos
+function filtrarProdutos() {
+  const termo = document.getElementById("busca-produto").value.toLowerCase();
+  const fazendaSelecionada = document.getElementById("filtro-fazenda").value;
+
+  let produtosFiltrados = produtosCarregados.filter(p =>
+  (p.nomeProduto?.toLowerCase().includes(termo) ||
+    p.tipo?.toLowerCase().includes(termo) ||
+    p.fazenda?.nome?.toLowerCase().includes(termo))
+  );
+
+  if (fazendaSelecionada !== "todas") {
+    produtosFiltrados = produtosFiltrados.filter(
+      p => String(p.fazenda?.idFazenda) === String(fazendaSelecionada)
+    );
+  }
+
+  renderizarProdutos(produtosFiltrados);
+}
+
+
+
 async function carregarTodosProdutos() {
   if (!usuarioId) {
     alert("Usuário não autenticado. Faça login.");
@@ -18,7 +56,16 @@ async function carregarTodosProdutos() {
     const idsFazendas = fazendasUsuario.map(f => f.idFazenda);
     console.log("✅ Fazendas do usuário:", fazendasUsuario);
 
-    // 🔹 2. Buscar todos os produtos
+    // 🔹 2. Popular seletor de fazendas (dropdown)
+    const seletorFazenda = document.getElementById("filtro-fazenda");
+    if (seletorFazenda) {
+      seletorFazenda.innerHTML = `<option value="todas">Todas as Fazendas</option>`;
+      fazendasUsuario.forEach(f => {
+        seletorFazenda.innerHTML += `<option value="${f.idFazenda}">${f.nome}</option>`;
+      });
+    }
+
+    // 🔹 3. Buscar todos os produtos (entrada, intermedio, saída)
     const [entradas, intermedios, saidas] = await Promise.all([
       carregar("entrada", "http://localhost:8080/api/produtosEntrada"),
       carregar("intermedio", "http://localhost:8080/api/produtosIntermedios"),
@@ -29,21 +76,26 @@ async function carregarTodosProdutos() {
     console.log("📦 Produtos Intermedios:", intermedios);
     console.log("📦 Produtos Saida:", saidas);
 
-    // 🔹 3. Filtrar produtos apenas das fazendas do usuário
+    // 🔹 4. Filtrar produtos apenas das fazendas do usuário
     const todosProdutos = [...entradas, ...intermedios, ...saidas].filter(
       p => idsFazendas.includes(p.idFazenda)
     );
 
     console.log("🎯 Produtos filtrados:", todosProdutos);
 
-
+    // 🔹 5. Salvar no cache local e renderizar
     produtosCarregados = todosProdutos;
     renderizarProdutos(produtosCarregados);
+
+    // 🔹 6. Garantir que filtros fiquem ativos após o carregamento
+    document.getElementById("filtro-fazenda").addEventListener("change", filtrarProdutos);
+    document.getElementById("busca-produto").addEventListener("input", filtrarProdutos);
   } catch (err) {
     console.error("Erro geral ao carregar produtos:", err);
     alert("Erro ao carregar produtos. Verifique o servidor.");
   }
 }
+
 
 
 
@@ -174,7 +226,7 @@ async function excluirProduto(tipo, id) {
 
 
 // ✏️ Abrir modal de edição
-function abrirEdicao(tipo, id) {
+async function abrirEdicao(tipo, id) {
   const idNum = Number(id);
   const produto = produtosCarregados.find(p => {
     if (tipo === "entrada") return p.idProdutosEntrada === idNum;
@@ -184,7 +236,7 @@ function abrirEdicao(tipo, id) {
 
   if (!produto) return alert("Produto não encontrado.");
 
-  // Preenche dados básicos
+  // 🔹 Preenche os campos básicos
   document.getElementById("edit-id").value = idNum;
   document.getElementById("edit-tipo-produto").value = tipo;
   document.getElementById("edit-nome").value = produto.nomeProduto || "";
@@ -192,35 +244,52 @@ function abrirEdicao(tipo, id) {
   document.getElementById("edit-valor").value =
     produto.valorUnitario || produto.valorEstimado || produto.valorVenda || 0;
 
+  // 🔹 Preenche opções do subtipo
   const selectSubtipo = document.getElementById("edit-subtipo");
-  selectSubtipo.innerHTML = ""; // limpa opções anteriores
+  selectSubtipo.innerHTML = "";
 
-  // 🔹 Entrada → Tipos de insumos
   if (tipo === "entrada") {
     ["RAÇÃO", "ADUBO", "MEDICAMENTO", "SEMENTE", "OUTRO"].forEach(op => {
       selectSubtipo.innerHTML += `<option value="${op}">${op}</option>`;
     });
     selectSubtipo.value = produto.tipo || "";
-
-    // 🔹 Intermediário → Tipos de produção
   } else if (tipo === "intermedio") {
     ["ANIMAL", "LAVOURA", "PLANTAÇÃO"].forEach(op => {
       selectSubtipo.innerHTML += `<option value="${op}">${op}</option>`;
     });
     selectSubtipo.value = produto.tipo || "";
-
-    // 🔹 Saída → Unidade de medida (editável)
   } else if (tipo === "saida") {
     ["KG", "L", "SACA", "TONELADA"].forEach(op => {
       selectSubtipo.innerHTML += `<option value="${op}">${op}</option>`;
     });
-    // ✅ Garante que a unidade atual venha selecionada (sem forçar "SACA")
     selectSubtipo.value = produto.unidadeMedida?.toUpperCase?.() || "SACA";
   }
 
-  // Abre o modal de edição
+  // 🔹 Preenche o seletor de fazenda
+  const selectFazenda = document.getElementById("edit-fazenda");
+  if (selectFazenda) {
+    selectFazenda.innerHTML = `<option value="">Selecione uma fazenda...</option>`;
+
+    try {
+      const resp = await fetch(`http://localhost:8080/api/fazendas/porDono/${usuarioId}`);
+      if (resp.ok) {
+        const fazendas = await resp.json();
+        fazendas.forEach(f => {
+          const selected = produto.fazenda?.idFazenda === f.idFazenda ? "selected" : "";
+          selectFazenda.innerHTML += `<option value="${f.idFazenda}" ${selected}>${f.nome}</option>`;
+        });
+      } else {
+        console.warn("Erro ao carregar fazendas do usuário.");
+      }
+    } catch (e) {
+      console.error("Erro ao buscar fazendas:", e);
+    }
+  }
+
+  // 🔹 Exibe o modal
   new bootstrap.Modal(document.getElementById("modal-editar")).show();
 }
+
 
 
 
@@ -236,7 +305,8 @@ async function salvarEdicao() {
   const subtipo = document.getElementById("edit-subtipo").value.trim().toUpperCase(); // garante enum válido
   const quantidade = parseFloat(document.getElementById("edit-quantidade").value);
   const valor = parseFloat(document.getElementById("edit-valor").value);
-  const fazendaId = localStorage.getItem("FAZENDA_ID") || 1; // substitua se estiver usando fazenda selecionada
+  const fazendaId = document.getElementById("edit-fazenda").value;
+
 
   let produtoAtualizado = { nomeProduto: nome, quantidade };
 

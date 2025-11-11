@@ -1,6 +1,7 @@
 package br.com.nextdev.gestao_cafe.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,7 +22,7 @@ public class ProdutoSaida {
 
     @ManyToOne
     @JoinColumn(name = "idFazenda", nullable = false)
-    @JsonBackReference("fazenda-produtoSaida")
+    @JsonIgnoreProperties("produtosSaida")
     private Fazenda fazenda;
 
 
