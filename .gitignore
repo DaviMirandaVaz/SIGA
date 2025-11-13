@@ -77,10 +77,3 @@ build/
 *.swp
 
 
-# ========================
-# Local config
-# ========================
-application.properties
-
-/java/gestao-cafe/target/
-/mysql/
