@@ -34,6 +34,12 @@ public class ProdutoSaidaController {
                     p.setUnidadeMedida(novoProduto.getUnidadeMedida());
                     p.setValorVenda(novoProduto.getValorVenda());
                     p.setDataVenda(novoProduto.getDataVenda());
+
+                    // ✅ Atualiza a fazenda associada, se houver
+                    if (novoProduto.getFazenda() != null && novoProduto.getFazenda().getIdFazenda() != null) {
+                        p.setFazenda(novoProduto.getFazenda());
+                    }
+
                     return produtoSaidaRepository.save(p);
                 }).orElse(null);
     }

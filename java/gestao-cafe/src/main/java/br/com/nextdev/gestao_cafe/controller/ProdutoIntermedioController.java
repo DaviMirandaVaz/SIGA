@@ -35,6 +35,10 @@ public class ProdutoIntermedioController {
                     p.setValorEstimado(novoProduto.getValorEstimado());
                     p.setDataInicio(novoProduto.getDataInicio());
                     p.setStatus(novoProduto.getStatus());
+                    // ✅ Atualiza a fazenda associada, se houver
+                    if (novoProduto.getFazenda() != null && novoProduto.getFazenda().getIdFazenda() != null) {
+                        p.setFazenda(novoProduto.getFazenda());
+                    }
                     return produtoIntermedioRepository.save(p);
                 }).orElse(null);
     }

@@ -35,9 +35,17 @@ public class ProdutosEntradaController {
                     p.setUnidadeMedida(novoProduto.getUnidadeMedida());
                     p.setValorUnitario(novoProduto.getValorUnitario());
                     p.setDataCompra(novoProduto.getDataCompra());
+
+                    // ✅ Atualiza a fazenda associada, se houver
+                    if (novoProduto.getFazenda() != null && novoProduto.getFazenda().getIdFazenda() != null) {
+                        p.setFazenda(novoProduto.getFazenda());
+                    }
+
                     return produtosEntradaRepository.save(p);
-                }).orElse(null);
+                })
+                .orElse(null);
     }
+
 
     @DeleteMapping("/{id}")
     public void deletar(@PathVariable Integer id) {
