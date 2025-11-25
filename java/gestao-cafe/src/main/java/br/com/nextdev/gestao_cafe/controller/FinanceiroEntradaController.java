@@ -15,29 +15,45 @@ public class FinanceiroEntradaController {
     @Autowired
     private FinanceiroEntradaRepository financeiroEntradaRepository;
 
-    // 🔎 Listar entradas por fazenda
-    @GetMapping("/fazenda/{idFazenda}")
-    public List<FinanceiroEntrada> listarPorFazenda(@PathVariable Integer idFazenda) {
-        return financeiroEntradaRepository.findByFazenda_IdFazenda(idFazenda);
+    // ✅ NOVO: Listar TUDO (necessário para a opção "Todas as Fazendas")
+    @GetMapping
+    public List<FinanceiroEntrada> listarTodos() {
+        List<FinanceiroEntrada> lista = financeiroEntradaRepository.findAll();
+        // Força o carregamento dos objetos relacionados para o JSON não ir vazio
+        lista.forEach(e -> {
+            if (e.getFazenda() != null) e.getFazenda().getNome();
+            if (e.getProdutoSaida() != null) e.getProdutoSaida().getNomeProduto();
+        });
+        return lista;
     }
 
+    // 🔎 Listar por fazenda (Atualizado com carregamento forçado)
+    @GetMapping("/fazenda/{idFazenda}")
+    public List<FinanceiroEntrada> listarPorFazenda(@PathVariable Integer idFazenda) {
+        List<FinanceiroEntrada> lista = financeiroEntradaRepository.findByFazenda_IdFazenda(idFazenda);
+        lista.forEach(e -> {
+            if (e.getFazenda() != null) e.getFazenda().getNome();
+            if (e.getProdutoSaida() != null) e.getProdutoSaida().getNomeProduto();
+        });
+        return lista;
+    }
 
     @PostMapping
     public FinanceiroEntrada cadastrar(@RequestBody FinanceiroEntrada entrada) {
         return financeiroEntradaRepository.save(entrada);
     }
 
+    // ... seus métodos PUT e DELETE continuam iguais ...
     @PutMapping("/{id}")
     public FinanceiroEntrada atualizar(@PathVariable Integer id, @RequestBody FinanceiroEntrada novaEntrada) {
-        return financeiroEntradaRepository.findById(id)
-                .map(e -> {
-                    e.setTipoEntrada(novaEntrada.getTipoEntrada());
-                    e.setDescricao(novaEntrada.getDescricao());
-                    e.setValor(novaEntrada.getValor());
-                    e.setDataEntrada(novaEntrada.getDataEntrada());
-                    e.setProdutoSaida(novaEntrada.getProdutoSaida());
-                    return financeiroEntradaRepository.save(e);
-                }).orElse(null);
+        return financeiroEntradaRepository.findById(id).map(e -> {
+            e.setTipoEntrada(novaEntrada.getTipoEntrada());
+            e.setDescricao(novaEntrada.getDescricao());
+            e.setValor(novaEntrada.getValor());
+            e.setDataEntrada(novaEntrada.getDataEntrada());
+            e.setProdutoSaida(novaEntrada.getProdutoSaida()); // Atualiza vínculo
+            return financeiroEntradaRepository.save(e);
+        }).orElse(null);
     }
 
     @DeleteMapping("/{id}")
@@ -45,4 +61,3 @@ public class FinanceiroEntradaController {
         financeiroEntradaRepository.deleteById(id);
     }
 }
-
