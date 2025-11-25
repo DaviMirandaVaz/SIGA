@@ -15,10 +15,12 @@ public class FinanceiroEntradaController {
     @Autowired
     private FinanceiroEntradaRepository financeiroEntradaRepository;
 
-    @GetMapping
-    public List<FinanceiroEntrada> listar() {
-        return financeiroEntradaRepository.findAll();
+    // 🔎 Listar entradas por fazenda
+    @GetMapping("/fazenda/{idFazenda}")
+    public List<FinanceiroEntrada> listarPorFazenda(@PathVariable Integer idFazenda) {
+        return financeiroEntradaRepository.findByFazenda_IdFazenda(idFazenda);
     }
+
 
     @PostMapping
     public FinanceiroEntrada cadastrar(@RequestBody FinanceiroEntrada entrada) {

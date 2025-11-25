@@ -5,39 +5,55 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function carregarFazendas() {
   const select = document.getElementById("filtro-fazenda");
+
   try {
     const usuarioId = localStorage.getItem("USUARIO_ID");
-    const resp = await fetch(`http://localhost:8080/api/fazendas?usuarioId=${usuarioId}`);
-    if (!resp.ok) throw new Error("Erro ao buscar fazendas");
-    const fazendas = await resp.json();
 
-    fazendas.forEach(f => {
+    const resp = await fetch(`http://localhost:8080/api/usuario-fazenda/porUsuario/${usuarioId}`);
+    if (!resp.ok) throw new Error("Erro ao buscar fazendas do usuário");
+
+    const vinculos = await resp.json();
+
+    select.innerHTML = `<option value="todas">Todas as Fazendas</option>`;
+
+    vinculos.forEach(v => {
+      if (!v.fazenda) return;
+
       const opt = document.createElement("option");
-      opt.value = f.idFazenda;
-      opt.textContent = f.nome;
+      opt.value = v.fazenda.idFazenda;
+      opt.textContent = v.fazenda.nome;
       select.appendChild(opt);
     });
+
   } catch (err) {
     console.error("Erro ao carregar fazendas:", err);
   }
 }
 
 async function carregarFinanceiro(fazendaId = "todas") {
-  const urlBase = "http://localhost:8080/api";
+  const urlBase = "http://localhost:8080/api/financeiro";
+
   const urlEntradas = fazendaId === "todas"
-    ? `${urlBase}/financeiroEntrada`
-    : `${urlBase}/financeiroEntrada/fazenda/${fazendaId}`;
+    ? `${urlBase}/entradas`
+    : `${urlBase}/entradas/fazenda/${fazendaId}`;
+
   const urlSaidas = fazendaId === "todas"
-    ? `${urlBase}/financeiroSaida`
-    : `${urlBase}/financeiroSaida/fazenda/${fazendaId}`;
+    ? `${urlBase}/saidas`
+    : `${urlBase}/saidas/fazenda/${fazendaId}`;
 
   try {
-    const [respEntradas, respSaidas] = await Promise.all([fetch(urlEntradas), fetch(urlSaidas)]);
+    const [respEntradas, respSaidas] = await Promise.all([
+      fetch(urlEntradas),
+      fetch(urlSaidas)
+    ]);
+
     const entradas = await respEntradas.json();
     const saidas = await respSaidas.json();
 
     renderizarEntradas(entradas);
     renderizarSaidas(saidas);
+    atualizarSaldos(entradas, saidas);
+
   } catch (err) {
     console.error("Erro ao carregar financeiro:", err);
   }
@@ -92,6 +108,7 @@ function renderizarSaidas(lista) {
     tabela.appendChild(tr);
   });
 }
+
 function atualizarSaldos(entradas, saidas) {
   const totalEntradas = entradas.reduce((acc, e) => acc + parseFloat(e.valor || 0), 0);
   const totalSaidas = saidas.reduce((acc, s) => acc + parseFloat(s.valor || 0), 0);
@@ -101,7 +118,6 @@ function atualizarSaldos(entradas, saidas) {
   document.getElementById("saldo-saidas").innerText = `R$ ${totalSaidas.toFixed(2)}`;
   document.getElementById("saldo-total").innerText = `R$ ${saldoTotal.toFixed(2)}`;
 }
-
 
 function filtrarPorFazenda() {
   const fazendaId = document.getElementById("filtro-fazenda").value;
