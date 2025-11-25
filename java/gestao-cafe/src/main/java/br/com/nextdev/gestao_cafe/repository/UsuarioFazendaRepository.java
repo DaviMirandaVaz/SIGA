@@ -7,4 +7,5 @@ import java.util.List;
 public interface UsuarioFazendaRepository extends JpaRepository<UsuarioFazenda, Integer> {
     List<UsuarioFazenda> findByUsuario_IdUsuario(Integer idUsuario);
     List<UsuarioFazenda> findByFazenda_IdFazenda(Integer idFazenda);
+
 }

@@ -50,20 +50,33 @@ async function carregarTodosProdutos() {
 
   try {
     // 🔹 1. Buscar as fazendas do usuário logado
-    const fazendasResp = await fetch(`http://localhost:8080/api/fazendas/porDono/${usuarioId}`);
+    const fazendasResp = await fetch(`http://localhost:8080/api/usuario-fazenda/porUsuario/${usuarioId}`);
     if (!fazendasResp.ok) throw new Error("Erro ao buscar fazendas do usuário.");
     const fazendasUsuario = await fazendasResp.json();
-    const idsFazendas = fazendasUsuario.map(f => f.idFazenda);
+    const idsFazendas = fazendasUsuario.map(f => f.fazenda?.idFazenda).filter(id => id !== undefined && id !== null);
+
     console.log("✅ Fazendas do usuário:", fazendasUsuario);
 
     // 🔹 2. Popular seletor de fazendas (dropdown)
     const seletorFazenda = document.getElementById("filtro-fazenda");
+
     if (seletorFazenda) {
       seletorFazenda.innerHTML = `<option value="todas">Todas as Fazendas</option>`;
+
       fazendasUsuario.forEach(f => {
-        seletorFazenda.innerHTML += `<option value="${f.idFazenda}">${f.nome}</option>`;
+        const id = f.fazenda?.idFazenda;
+        const nome = f.fazenda?.nome;
+
+        console.log("ID detectado:", id, "Nome detectado:", nome);
+
+        if (id && nome) {
+          seletorFazenda.innerHTML += `<option value="${id}">${nome}</option>`;
+        }
       });
     }
+
+
+
 
     // 🔹 3. Buscar todos os produtos (entrada, intermedio, saída)
     const [entradas, intermedios, saidas] = await Promise.all([
@@ -75,11 +88,23 @@ async function carregarTodosProdutos() {
     console.log("📦 Produtos Entrada:", entradas);
     console.log("📦 Produtos Intermedios:", intermedios);
     console.log("📦 Produtos Saida:", saidas);
+    console.log("🔍 IDs das fazendas do usuário:", idsFazendas);
+
+    console.log("🔍 Verificando fazendas dos produtos Entrada:");
+    entradas.forEach(p => console.log(`Entrada ${p.nomeProduto} →`, p.fazenda?.idFazenda));
+
+    console.log("🔍 Verificando fazendas dos produtos Intermedios:");
+    intermedios.forEach(p => console.log(`Intermedio ${p.nomeProduto} →`, p.fazenda?.idFazenda));
+
+    console.log("🔍 Verificando fazendas dos produtos Saida:");
+    saidas.forEach(p => console.log(`Saída ${p.nomeProduto} →`, p.fazenda?.idFazenda));
+
 
     // 🔹 4. Filtrar produtos apenas das fazendas do usuário
     const todosProdutos = [...entradas, ...intermedios, ...saidas].filter(
-      p => idsFazendas.includes(p.idFazenda)
+      p => idsFazendas.includes(p.fazenda?.idFazenda)
     );
+
 
     console.log("🎯 Produtos filtrados:", todosProdutos);
 

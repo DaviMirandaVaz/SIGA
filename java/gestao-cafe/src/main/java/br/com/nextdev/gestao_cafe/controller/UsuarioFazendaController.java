@@ -1,5 +1,6 @@
 package br.com.nextdev.gestao_cafe.controller;
 
+import br.com.nextdev.gestao_cafe.model.Fazenda;
 import br.com.nextdev.gestao_cafe.model.UsuarioFazenda;
 import br.com.nextdev.gestao_cafe.repository.UsuarioFazendaRepository;
 import br.com.nextdev.gestao_cafe.repository.UsuarioRepository;
@@ -40,6 +41,16 @@ public class UsuarioFazendaController {
     public List<UsuarioFazenda> listarPorFazenda(@PathVariable Integer idFazenda) {
         return usuarioFazendaRepository.findByFazenda_IdFazenda(idFazenda);
     }
+
+    @GetMapping("/fazendasPorUsuario/{idUsuario}")
+    public List<Fazenda> listarFazendasPorUsuario(@PathVariable Integer idUsuario) {
+        List<UsuarioFazenda> vinculos = usuarioFazendaRepository.findByUsuario_IdUsuario(idUsuario);
+        return vinculos.stream()
+                .map(UsuarioFazenda::getFazenda)
+                .toList();
+    }
+
+
 
     // ✅ Criar vínculo entre usuário e fazenda
     @PostMapping

@@ -17,8 +17,15 @@ public class ProdutoIntermedioController {
 
     @GetMapping
     public List<ProdutoIntermedio> listar() {
-        return produtoIntermedioRepository.findAll();
+        List<ProdutoIntermedio> lista = produtoIntermedioRepository.findAll();
+        lista.forEach(p -> {
+            if (p.getFazenda() != null) {
+                p.getFazenda().getIdFazenda(); // força o carregamento
+            }
+        });
+        return lista;
     }
+
 
     @PostMapping
     public ProdutoIntermedio cadastrar(@RequestBody ProdutoIntermedio produto) {

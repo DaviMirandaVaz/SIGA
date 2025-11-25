@@ -17,8 +17,15 @@ public class ProdutosEntradaController {
 
     @GetMapping
     public List<ProdutosEntrada> listar() {
-        return produtosEntradaRepository.findAll();
+        List<ProdutosEntrada> lista = produtosEntradaRepository.findAll();
+        lista.forEach(p -> {
+            if (p.getFazenda() != null) {
+                p.getFazenda().getIdFazenda(); // força o carregamento
+            }
+        });
+        return lista;
     }
+
 
     @PostMapping
     public ProdutosEntrada cadastrar(@RequestBody ProdutosEntrada produto) {
