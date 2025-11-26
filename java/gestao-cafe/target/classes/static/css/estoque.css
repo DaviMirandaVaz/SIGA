@@ -1,0 +1,233 @@
+/* ------------------------------
+   GERAL
+--------------------------------*/
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #f5f7f5;
+  color: #333;
+}
+
+a {
+  text-decoration: none;
+}
+
+/* Navbar */
+.navbar-brand {
+    font-weight: 700;
+    color: var(--cor-principal);
+}
+
+.nav-link {
+    color: var(--cor-texto);
+    font-weight: 500;
+    margin: 0 1rem;
+}
+
+.nav-link.active {
+    color: var(--cor-principal);
+}
+
+.nav-link:hover {
+    color: var(--cor-principal);
+}
+
+/* ------------------------------
+   SIDEBAR
+--------------------------------*/
+.sidebar {
+  background: #ffffff;
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 20px;
+}
+
+.sidebar-title {
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #2e7d32;
+}
+
+.sidebar-button {
+  display: block;
+  background: #2e7d32;
+  color: #fff;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  font-weight: 500;
+  text-align: center;
+  transition: background 0.3s;
+}
+
+.sidebar-button:hover {
+  background: #256427;
+}
+
+/* ------------------------------
+   CONTEÚDO PRINCIPAL
+--------------------------------*/
+.content-panel {
+  background: #ffffff;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+  font-weight: 600;
+  color: #2e7d32;
+  border-bottom: 2px solid #c8e6c9;
+  padding-bottom: 0.5rem;
+}
+
+/* ------------------------------
+   CARDS DE PRODUTO
+--------------------------------*/
+.product-card {
+  background: #fafafa;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  padding: 1rem 1.2rem;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.product-card:hover {
+  border-color: #2e7d32;
+  background-color: #f0fdf4;
+}
+
+.product-card summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #2e7d32;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.product-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.product-card summary::after {
+  content: "➕";
+  color: #2e7d32;
+  font-size: 1.1rem;
+  transition: transform 0.2s;
+}
+
+.product-card[open] summary::after {
+  content: "➖";
+}
+
+#usuario-logado {
+  font-size: 1rem;
+}
+
+#btn-logout {
+  transition: 0.3s;
+}
+
+#btn-logout:hover {
+  background-color: #dc3545;
+  color: white;
+}
+
+
+.product-info {
+  margin-top: 1rem;
+  padding-left: 0.5rem;
+  border-left: 3px solid #c8e6c9;
+}
+
+.product-info p {
+  margin: 0.3rem 0;
+  color: #555;
+}
+
+.product-info strong {
+  color: #2e7d32;
+}
+
+.product-card {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+
+.product-card summary {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #198754;
+    cursor: pointer;
+}
+
+.product-card summary:hover {
+    color: #157347;
+}
+
+.product-info {
+    margin-top: 0.5rem;
+    border-top: 1px solid #dee2e6;
+    padding-top: 0.75rem;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+}
+
+.actions button i {
+    margin-right: 5px;
+}
+
+
+#busca-produto {
+  border-radius: 20px;
+  padding: 6px 14px;
+  border: 1px solid #28a745;
+  transition: all 0.2s ease;
+}
+
+#busca-produto:focus {
+  box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+  outline: none;
+}
+
+/* Tabela de produtos */
+.table thead {
+  background-color: #2e7d32 !important;
+  color: #fff !important;
+}
+
+.table td, .table th {
+  vertical-align: middle !important;
+}
+
+.table tbody tr:hover {
+  background-color: #f1f8e9 !important;
+}
+
+.table .btn {
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+.table .btn-success {
+  background-color: #2e7d32;
+  border-color: #2e7d32;
+}
+
+.table .btn-success:hover {
+  background-color: #256427;
+  border-color: #256427;
+}
+

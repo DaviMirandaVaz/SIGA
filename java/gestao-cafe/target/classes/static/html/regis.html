@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="icon" type="image/png" href="../png/favicon.ico">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <link href="../css/login.css" type="text/css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+
+  <script src="../javascript/login.js" defer></script>
+  <script src="../javascript/auth.js" defer></script>
+
+</head>
+
+<body data-requer-login="false">
+  
+  <nav class="navbar navbar-expand-sm navbar-custom">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold text-success" href="../html/home.html">
+        <i class="fas fa-seedling"></i> SIGA
+      </a>
+      <div class="ms-auto">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="../html/login.html">Entrar</a>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="login-container">
+    <div class="login-panel">
+      <p class="cafe-text">SIGA</p>
+      <i class="fas fa-mug-hot coffee-icon"></i>
+
+      <h1 class="login-title">Registrar</h1></br>
+
+      <form id="register-form">
+        <h2>Usuario</h2>
+
+        <!-- Dados do usuário -->
+        <div class="mb-3">
+          <input type="text" class="form-control" id="reg-nome" placeholder="Nome do usuário" required>
+        </div>
+
+        <div class="mb-3">
+          <input type="email" class="form-control" id="reg-email" placeholder="E-mail" required>
+        </div>
+
+        <div class="mb-3">
+          <input type="password" class="form-control" id="reg-senha" placeholder="Senha" required>
+        </div>
+
+      </form>
+
+      <button class="btn btn-register w-100" id="register-btn">Registrar</button>
+    </div>
+  </div>
+</body>
+
+</html>
