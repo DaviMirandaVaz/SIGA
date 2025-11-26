@@ -26,6 +26,11 @@ public class ProdutosEntradaController {
         return lista;
     }
 
+    @GetMapping("/fazenda/{idFazenda}")
+    public List<ProdutosEntrada> listarPorFazenda(@PathVariable Integer idFazenda) {
+        return produtosEntradaRepository.findByFazenda_IdFazenda(idFazenda);
+    }
+
 
     @PostMapping
     public ProdutosEntrada cadastrar(@RequestBody ProdutosEntrada produto) {

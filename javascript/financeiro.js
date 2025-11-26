@@ -1,25 +1,41 @@
 document.addEventListener("DOMContentLoaded", async () => {
-    // 1. Carrega os dados iniciais
-    await carregarFazendas(); 
-    await carregarFazendasModal(); 
-    
-    // 2. Define o estado inicial (Entrada ou Saída)
-    await mudarTipoTransacao(); 
-    
-    // 3. Carrega a tabela financeira
-    await carregarFinanceiro(); 
+    await carregarFazendas();
+    await carregarFazendasModal();
+    await mudarTipoTransacao();
+    await carregarFinanceiro();
 });
 
-// --- LISTAGEM E FILTROS ---
+// ======================================
+// LISTAGEM DE FAZENDAS DO USUÁRIO
+// ======================================
+
+async function carregarFazendasDoUsuarioIDs() {
+    const usuarioId = localStorage.getItem("USUARIO_ID");
+
+    try {
+        const resp = await fetch(`http://localhost:8080/api/usuario-fazenda/porUsuario/${usuarioId}`);
+        const vinculos = await resp.json();
+
+        return vinculos
+            .filter(v => v.fazenda)
+            .map(v => v.fazenda.idFazenda);
+    } catch (err) {
+        console.error("Erro ao buscar fazendas do usuário:", err);
+        return [];
+    }
+}
+
+
+
 
 async function carregarFazendas() {
     const select = document.getElementById("filtro-fazenda");
+
     try {
         const usuarioId = localStorage.getItem("USUARIO_ID");
         const resp = await fetch(`http://localhost:8080/api/usuario-fazenda/porUsuario/${usuarioId}`);
-        if(!resp.ok) return;
-
         const vinculos = await resp.json();
+
         select.innerHTML = `<option value="todas">Todas as Fazendas</option>`;
 
         vinculos.forEach(v => {
@@ -35,11 +51,28 @@ async function carregarFazendas() {
     }
 }
 
+function filtrarPorFazenda() {
+    const fazendaId = document.getElementById("filtro-fazenda").value;
+    carregarFinanceiro(fazendaId);
+}
+
+// ======================================
+// LISTAGEM FINANCEIRO
+// ======================================
+
 async function carregarFinanceiro(fazendaId = "todas") {
-    const urlBase = "http://localhost:8080/api/financeiro";
-    
-    const urlEntradas = fazendaId === "todas" ? `${urlBase}/entradas` : `${urlBase}/entradas/fazenda/${fazendaId}`;
-    const urlSaidas = fazendaId === "todas" ? `${urlBase}/saidas` : `${urlBase}/saidas/fazenda/${fazendaId}`;
+    const usuarioId = localStorage.getItem("USUARIO_ID");
+    const base = "http://localhost:8080/api/financeiro";
+
+    const urlEntradas =
+        fazendaId === "todas"
+            ? `${base}/entradas?usuarioId=${usuarioId}`
+            : `${base}/entradas/fazenda/${fazendaId}?usuarioId=${usuarioId}`;
+
+    const urlSaidas =
+        fazendaId === "todas"
+            ? `${base}/saidas?usuarioId=${usuarioId}`
+            : `${base}/saidas/fazenda/${fazendaId}?usuarioId=${usuarioId}`;
 
     try {
         const [respEntradas, respSaidas] = await Promise.all([
@@ -53,80 +86,104 @@ async function carregarFinanceiro(fazendaId = "todas") {
         renderizarEntradas(entradas);
         renderizarSaidas(saidas);
         atualizarSaldos(entradas, saidas);
-
     } catch (err) {
-        console.error("Erro ao carregar tabelas:", err);
+        console.error("Erro ao carregar financeiro:", err);
     }
 }
 
-function filtrarPorFazenda() {
-    const fazendaId = document.getElementById("filtro-fazenda").value;
-    carregarFinanceiro(fazendaId);
-}
-
-// --- MODAL E CADASTRO ---
+// ======================================
+// MODAL – LISTAR FAZENDAS DO USUÁRIO
+// ======================================
 
 async function carregarFazendasModal() {
     const select = document.getElementById("select-fazenda-modal");
+
     try {
         const usuarioId = localStorage.getItem("USUARIO_ID");
         const resp = await fetch(`http://localhost:8080/api/usuario-fazenda/porUsuario/${usuarioId}`);
         const vinculos = await resp.json();
-        
+
         select.innerHTML = '<option value="" disabled selected>Selecione a fazenda...</option>';
+
         vinculos.forEach(v => {
-            if(v.fazenda) {
+            const f = v.fazenda;
+            if (f) {
                 const opt = document.createElement("option");
-                opt.value = v.fazenda.idFazenda;
-                opt.textContent = v.fazenda.nome;
+                opt.value = f.idFazenda;
+                opt.textContent = f.nome;
                 select.appendChild(opt);
             }
         });
+
+        select.addEventListener("change", mudarTipoTransacao);
+
     } catch (err) {
-        console.error("Erro fazendas modal:", err);
+        console.error("Erro ao carregar fazendas modal:", err);
     }
 }
+
+// ======================================
+// PRODUTOS — GARANTE SOMENTE DO USUÁRIO
+// ======================================
 
 async function mudarTipoTransacao() {
     const tipo = document.getElementById("tipo-operacao").value;
     const labelProduto = document.getElementById("label-produto");
-    
+    const fazendaId = document.getElementById("select-fazenda-modal").value;
+    const usuarioId = localStorage.getItem("USUARIO_ID");
+
+    if (!fazendaId) return;
+
+    let url = "";
+
     if (tipo === "ENTRADA") {
         labelProduto.textContent = "Produto Vendido (Estoque Saída)";
-        await carregarProdutos("http://localhost:8080/api/produtosSaida");
+        url = `http://localhost:8080/api/produtosSaida/fazenda/${fazendaId}?usuarioId=${usuarioId}`;
     } else {
         labelProduto.textContent = "Insumo Comprado (Estoque Entrada)";
-        await carregarProdutos("http://localhost:8080/api/produtosEntrada");
+        url = `http://localhost:8080/api/produtosEntrada/fazenda/${fazendaId}?usuarioId=${usuarioId}`;
     }
+
+    await carregarProdutos(url, fazendaId);
 }
 
-async function carregarProdutos(url) {
+async function carregarProdutos(url, fazendaIdSelecionada) {
     const select = document.getElementById("select-produto");
+    const usuarioId = parseInt(localStorage.getItem("USUARIO_ID"));
+
     select.innerHTML = '<option value="" disabled selected>Carregando...</option>';
 
     try {
         const resp = await fetch(url);
-        if (!resp.ok) throw new Error("Erro na API de produtos");
-        
-        const produtos = await resp.json();
+        let produtos = await resp.json();
+
+        // 🔥 FILTRO DEFINITIVO
+        produtos = produtos.filter(p => {
+            const fazendaDoProduto = p.fazenda?.idFazenda;
+            return fazendaDoProduto === parseInt(fazendaIdSelecionada);
+        });
+
         select.innerHTML = '<option value="" disabled selected>Selecione o produto...</option>';
-        
+
         produtos.forEach(p => {
             const opt = document.createElement("option");
-            
-            // 🛑 AJUSTE CRÍTICO AQUI: Pegando o ID correto baseado na sua classe Java
-            // Se for ProdutoSaida tem idProdutoSaida, se for Entrada tem idProdutosEntrada
+
             const idReal = p.idProdutoSaida || p.idProdutosEntrada;
-            
-            opt.value = idReal; 
-            opt.textContent = p.nomeProduto; 
+            opt.value = idReal;
+            opt.textContent = p.nomeProduto;
+
             select.appendChild(opt);
         });
+
     } catch (err) {
-        console.error("Erro ao carregar produtos:", err);
-        select.innerHTML = '<option value="">Erro ao carregar lista</option>';
+        console.error("Erro produtos:", err);
+        select.innerHTML = '<option value="">Erro ao carregar</option>';
     }
 }
+
+// ======================================
+// SALVAR TRANSACAO
+// ======================================
 
 async function salvarTransacao() {
     const tipo = document.getElementById("tipo-operacao").value;
@@ -137,47 +194,31 @@ async function salvarTransacao() {
     const produtoId = document.getElementById("select-produto").value;
 
     if (!descricao || !valor || !data || !fazendaId || !produtoId) {
-        alert("Por favor, preencha todos os campos.");
+        alert("Preencha todos os campos.");
         return;
     }
 
-    // Objeto Base
     const payload = {
-        descricao: descricao,
+        descricao,
         valor: parseFloat(valor),
-        fazenda: { idFazenda: parseInt(fazendaId) } 
+        fazenda: { idFazenda: parseInt(fazendaId) }
     };
 
     let url = "";
 
     if (tipo === "ENTRADA") {
-        // --- FINANCEIRO ENTRADA (Receita) ---
-        payload.tipoEntrada = "VENDA"; // ✅ Correto (existe no seu Java)
+        payload.tipoEntrada = "VENDA";
         payload.dataEntrada = data;
-        payload.produtoSaida = { idProdutoSaida: parseInt(produtoId) }; 
-        
+        payload.produtoSaida = { idProdutoSaida: parseInt(produtoId) };
         url = "http://localhost:8080/api/financeiro/entradas";
-
     } else {
-        // --- FINANCEIRO SAÍDA (Despesa) ---
-        
-        // 🚨 AQUI ESTAVA O ERRO: "COMPRA" não existe no seu Enum. 
-        // Mudei para "CUSTO" (ou use "GASTO" / "INVESTIMENTO")
-        payload.tipoSaida = "CUSTO"; 
-        
+        payload.tipoSaida = "CUSTO";
         payload.dataSaida = data;
-
-        // ✅ CORREÇÃO DO NOME DO CAMPO:
-        // No Java é: private ProdutosEntrada produtoEntrada; (Singular)
-        // No objeto dentro: idProdutosEntrada (Conforme seu model ProdutosEntrada)
         payload.produtoEntrada = { idProdutosEntrada: parseInt(produtoId) };
-        
         url = "http://localhost:8080/api/financeiro/saidas";
     }
 
     try {
-        console.log("Enviando Payload:", JSON.stringify(payload)); 
-
         const resp = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -186,90 +227,116 @@ async function salvarTransacao() {
 
         if (resp.ok) {
             alert("Salvo com sucesso!");
-            
-            const modalEl = document.getElementById('modalTransacao');
-            const modal = bootstrap.Modal.getInstance(modalEl);
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalTransacao'));
             modal.hide();
-            
             document.getElementById("form-transacao").reset();
-            mudarTipoTransacao(); 
             carregarFinanceiro();
         } else {
-            alert("Erro ao salvar. Verifique o console.");
             console.log(await resp.text());
+            alert("Erro ao salvar!");
         }
     } catch (err) {
-        console.error("Erro na requisição:", err);
+        console.error("Erro salvar:", err);
     }
 }
 
-// --- RENDERS (TABELAS) ---
+// ======================================
+// RENDERS
+// ======================================
 
-function renderizarEntradas(lista) {
+async function renderizarEntradas(lista) {
+    const usuarioFazendas = await carregarFazendasDoUsuarioIDs();
+
+    // manter somente entradas de fazendas que o usuário pode acessar
+    lista = lista.filter(e =>
+        usuarioFazendas.includes(e.fazenda?.idFazenda)
+    );
+
     const tabela = document.getElementById("lista-entradas");
     tabela.innerHTML = "";
-    if (!lista || lista.length === 0) {
+
+    if (!lista.length) {
         tabela.innerHTML = `<tr><td colspan="7" class="text-center">Nenhuma entrada registrada.</td></tr>`;
         return;
     }
+
     lista.forEach(e => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td>${formatarData(e.dataEntrada)}</td>
             <td>${e.descricao}</td>
-            <td><span class="badge bg-success">${e.tipoEntrada || "ENTRADA"}</span></td>
+            <td><span class="badge bg-success">${e.tipoEntrada}</span></td>
             <td>R$ ${parseFloat(e.valor).toFixed(2)}</td>
-            <td>${e.fazenda ? e.fazenda.nome : "-"}</td>
-            <td>${e.produtoSaida ? e.produtoSaida.nomeProduto : "-"}</td>
-            <td>
-                <button class="btn btn-sm btn-danger" onclick="deletarItem('entradas', ${e.id})"><i class="fas fa-trash"></i></button>
-            </td>`;
+            <td>${e.fazenda?.nome || "-"}</td>
+            <td>${e.produtoSaida?.nomeProduto || "-"}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="deletarItem('entradas', ${e.id})"><i class="fas fa-trash"></i></button></td>
+        `;
         tabela.appendChild(tr);
     });
 }
 
-function renderizarSaidas(lista) {
+async function renderizarSaidas(lista) {
+    const usuarioFazendas = await carregarFazendasDoUsuarioIDs();
+
+    // manter somente saídas de fazendas que o usuário pode acessar
+    lista = lista.filter(s =>
+        usuarioFazendas.includes(s.fazenda?.idFazenda)
+    );
+
     const tabela = document.getElementById("lista-saidas");
     tabela.innerHTML = "";
-    if (!lista || lista.length === 0) {
+
+    if (!lista.length) {
         tabela.innerHTML = `<tr><td colspan="7" class="text-center">Nenhuma saída registrada.</td></tr>`;
         return;
     }
+
     lista.forEach(s => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td>${formatarData(s.dataSaida)}</td>
             <td>${s.descricao}</td>
-            <td><span class="badge bg-danger">${s.tipoSaida || "SAIDA"}</span></td>
+            <td><span class="badge bg-danger">${s.tipoSaida}</span></td>
             <td>R$ ${parseFloat(s.valor).toFixed(2)}</td>
-            <td>${s.fazenda ? s.fazenda.nome : "-"}</td>
-            <td>${s.produtoEntrada ? s.produtoEntrada.nomeProduto : "-"}</td>
-            <td>
-                <button class="btn btn-sm btn-danger" onclick="deletarItem('saidas', ${s.id})"><i class="fas fa-trash"></i></button>
-            </td>`;
+            <td>${s.fazenda?.nome || "-"}</td>
+            <td>${s.produtoEntrada?.nomeProduto || "-"}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="deletarItem('saidas', ${s.id})"><i class="fas fa-trash"></i></button></td>
+        `;
         tabela.appendChild(tr);
     });
 }
 
-function atualizarSaldos(entradas, saidas) {
-    const totalEntradas = entradas.reduce((acc, e) => acc + (e.valor || 0), 0);
-    const totalSaidas = saidas.reduce((acc, s) => acc + (s.valor || 0), 0);
-    
-    document.getElementById("saldo-entradas").innerText = `R$ ${totalEntradas.toFixed(2)}`;
-    document.getElementById("saldo-saidas").innerText = `R$ ${totalSaidas.toFixed(2)}`;
-    document.getElementById("saldo-total").innerText = `R$ ${(totalEntradas - totalSaidas).toFixed(2)}`;
+
+async function atualizarSaldos(entradas, saidas) {
+    const usuarioId = parseInt(localStorage.getItem("USUARIO_ID"));
+
+    // 🔹 Buscar IDs das fazendas vinculadas ao usuário
+    const fazendasUsuario = await carregarFazendasDoUsuarioIDs();
+
+    // 🔥 Filtra entradas e saídas por fazendas do usuário
+    const entradasUsuario = entradas.filter(e => fazendasUsuario.includes(e.fazenda?.idFazenda));
+    const saidasUsuario = saidas.filter(s => fazendasUsuario.includes(s.fazenda?.idFazenda));
+
+    // 🔢 Soma somente as filtradas
+    const totE = entradasUsuario.reduce((t, e) => t + e.valor, 0);
+    const totS = saidasUsuario.reduce((t, s) => t + s.valor, 0);
+
+    // 💰 Atualiza os campos
+    document.getElementById("saldo-entradas").innerText = `R$ ${totE.toFixed(2)}`;
+    document.getElementById("saldo-saidas").innerText = `R$ ${totS.toFixed(2)}`;
+    document.getElementById("saldo-total").innerText = `R$ ${(totE - totS).toFixed(2)}`;
 }
 
-function formatarData(dataStr) {
-    if(!dataStr) return "-";
-    const [ano, mes, dia] = dataStr.split('-');
-    return `${dia}/${mes}/${ano}`;
+
+
+function formatarData(data) {
+    if (!data) return "-";
+    const [y, m, d] = data.split("-");
+    return `${d}/${m}/${y}`;
 }
 
 async function deletarItem(tipo, id) {
-    if(!confirm("Tem certeza que deseja excluir?")) return;
-    try {
-        await fetch(`http://localhost:8080/api/financeiro/${tipo}/${id}`, { method: "DELETE" });
-        carregarFinanceiro();
-    } catch(err) { console.error(err); }
+    if (!confirm("Excluir item?")) return;
+    await fetch(`http://localhost:8080/api/financeiro/${tipo}/${id}`, { method: "DELETE" });
+    carregarFinanceiro();
 }

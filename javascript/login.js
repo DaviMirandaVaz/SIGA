@@ -1,3 +1,6 @@
+// ==========================
+//   REGISTRO DE USUÁRIO
+// ==========================
 document.addEventListener("DOMContentLoaded", () => {
   const registerForm = document.getElementById('register-form');
   const registerButton = document.getElementById('register-btn');
@@ -17,12 +20,12 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Cria o objeto igual ao esperado pelo backend
+    // Objeto enviado para o backend
     const usuario = {
       nome,
       email,
       senha,
-      tipoUsuario: "ADMIN"
+      tipoUsuario: "ADMIN" // Se quiser mudar depois, me avise
     };
 
     try {
@@ -48,6 +51,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+
+// ==========================
+//           LOGIN
+// ==========================
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById('login-form');
 
@@ -77,14 +84,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (response.ok) {
         const data = await response.json();
 
-        // Guarda informações do usuário no localStorage
+        // 🔥 SALVA TUDO PADRONIZADO
         localStorage.setItem('USUARIO_ID', data.id);
         localStorage.setItem('USUARIO_NOME', data.nome);
-        localStorage.setItem('USUARIO_TIPO', data.tipoUsuario);
-
+        localStorage.setItem('USUARIO_PERFIL', data.tipoUsuario); // AGORA É O MESMO QUE AS PÁGINAS LEEM
 
         alert(`Login realizado com sucesso! Bem-vindo, ${data.nome}`);
-        window.location.href = "../html/main.html"; // Redirecione conforme o seu projeto
+        window.location.href = "../html/estoque.html"; // redirecionamento
       } else {
         const erro = await response.json();
         alert(erro.erro || "Email ou senha incorretos.");

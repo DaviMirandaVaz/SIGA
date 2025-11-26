@@ -8,4 +8,6 @@ import java.util.List;
 public interface ProdutosEntradaRepository extends JpaRepository<ProdutosEntrada, Integer> {
     // Mudamos de findByFazenda para findByFazendaIn (aceita uma lista)
     List<ProdutosEntrada> findByFazendaIn(List<Fazenda> fazendas);
+    List<ProdutosEntrada> findByFazenda_IdFazenda(Integer idFazenda);
+
 }

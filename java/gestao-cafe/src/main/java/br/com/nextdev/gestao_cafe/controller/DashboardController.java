@@ -1,6 +1,9 @@
 package br.com.nextdev.gestao_cafe.controller;
 
 import br.com.nextdev.gestao_cafe.model.*;
+
+import br.com.nextdev.gestao_cafe.repository.FinanceiroEntradaRepository;
+import br.com.nextdev.gestao_cafe.repository.FinanceiroSaidaRepository;
 import br.com.nextdev.gestao_cafe.repository.ProdutosEntradaRepository;
 import br.com.nextdev.gestao_cafe.repository.ProdutoSaidaRepository;
 import br.com.nextdev.gestao_cafe.repository.UsuarioRepository;
@@ -14,111 +17,92 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@CrossOrigin(origins = "*") // Importante para evitar bloqueios
+@CrossOrigin(origins = "*")
 @RequestMapping("/api/dashboard")
 public class DashboardController {
 
-    @Autowired
-    private ProdutosEntradaRepository entradaRepo;
+    @Autowired private ProdutosEntradaRepository entradaRepo;
+    @Autowired private ProdutoSaidaRepository saidaRepo;
+    @Autowired private UsuarioRepository usuarioRepo;
 
-    @Autowired
-    private ProdutoSaidaRepository saidaRepo;
+    // NOVAS INJEÇÕES
+    @Autowired private FinanceiroEntradaRepository finEntradaRepo;
+    @Autowired private FinanceiroSaidaRepository finSaidaRepo;
 
-    @Autowired
-    private UsuarioRepository usuarioRepo;
-
-    // MÉTODO AUXILIAR: Busca as fazendas usando o ID recebido (userId)
+    // --- SEU MÉTODO DE SEGURANÇA (MANTIDO IGUAL) ---
     private List<Fazenda> getFazendasDoUsuario(Integer userId) {
-
-        if (userId == null) {
-            throw new RuntimeException("ID do usuário não foi informado.");
-        }
-
+        if (userId == null) throw new RuntimeException("ID do usuário não informado.");
         Usuario usuario = usuarioRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com ID: " + userId));
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + userId));
 
         List<Fazenda> fazendasAcessiveis = new ArrayList<>();
-
-        // 1. Se ele for Dono
-        if (usuario.getFazendas() != null && !usuario.getFazendas().isEmpty()) {
-            fazendasAcessiveis.addAll(usuario.getFazendas());
-        }
-
-        // 2. Se ele for Funcionário
-        if (usuario.getUsuarioFazendas() != null && !usuario.getUsuarioFazendas().isEmpty()) {
+        if (usuario.getFazendas() != null) fazendasAcessiveis.addAll(usuario.getFazendas());
+        if (usuario.getUsuarioFazendas() != null) {
             for (UsuarioFazenda vinculo : usuario.getUsuarioFazendas()) {
                 fazendasAcessiveis.add(vinculo.getFazenda());
             }
         }
-
         return fazendasAcessiveis;
     }
 
-    // 1. DADOS DE ENTRADA
+    // --- ENDPOINTS ANTIGOS DE PRODUTO (MANTIDOS) ---
     @GetMapping("/entrada")
     public List<Map<String, Object>> getDadosEntrada(@RequestParam Integer userId) {
         List<Fazenda> fazendas = getFazendasDoUsuario(userId);
-
         if (fazendas.isEmpty()) return new ArrayList<>();
-
         List<ProdutosEntrada> lista = entradaRepo.findByFazendaIn(fazendas);
 
         Map<String, Double> mapaSoma = new HashMap<>();
         for (ProdutosEntrada item : lista) {
-            String nome = item.getNomeProduto();
-            Double qtd = item.getQuantidade() != null ? item.getQuantidade().doubleValue() : 0.0;
-            mapaSoma.put(nome, mapaSoma.getOrDefault(nome, 0.0) + qtd);
+            mapaSoma.put(item.getNomeProduto(), mapaSoma.getOrDefault(item.getNomeProduto(), 0.0) + (item.getQuantidade() != null ? item.getQuantidade().doubleValue() : 0.0));
         }
-
         return formatarParaGrafico(mapaSoma);
     }
 
-    // 2. DADOS DE SAÍDA
     @GetMapping("/saida")
     public List<Map<String, Object>> getDadosSaida(@RequestParam Integer userId) {
         List<Fazenda> fazendas = getFazendasDoUsuario(userId);
         if (fazendas.isEmpty()) return new ArrayList<>();
-
         List<ProdutoSaida> lista = saidaRepo.findByFazendaIn(fazendas);
 
         Map<String, Double> mapaSoma = new HashMap<>();
         for (ProdutoSaida item : lista) {
-            String nome = item.getNomeProduto();
-            Double valor = item.getValorVenda() != null ? item.getValorVenda().doubleValue() : 0.0;
-            mapaSoma.put(nome, mapaSoma.getOrDefault(nome, 0.0) + valor);
+            mapaSoma.put(item.getNomeProduto(), mapaSoma.getOrDefault(item.getNomeProduto(), 0.0) + (item.getValorVenda() != null ? item.getValorVenda().doubleValue() : 0.0));
         }
-
         return formatarParaGrafico(mapaSoma);
     }
 
-    // 3. RESUMO (Cards)
     @GetMapping("/resumo")
     public Map<String, Object> getResumo(@RequestParam Integer userId) {
         List<Fazenda> fazendas = getFazendasDoUsuario(userId);
         Map<String, Object> resumo = new HashMap<>();
+        if (fazendas.isEmpty()) { resumo.put("totalEntrada", 0); resumo.put("faturamento", 0); return resumo; }
 
-        if (fazendas.isEmpty()) {
-            resumo.put("totalEntrada", 0);
-            resumo.put("faturamento", 0);
-            return resumo;
-        }
-
-        List<ProdutosEntrada> entradas = entradaRepo.findByFazendaIn(fazendas);
-        double totalItensEntrada = 0;
-        for (ProdutosEntrada item : entradas) {
-            if (item.getQuantidade() != null) totalItensEntrada += item.getQuantidade().doubleValue();
-        }
-
-        List<ProdutoSaida> saidas = saidaRepo.findByFazendaIn(fazendas);
-        double totalFaturamento = 0;
-        for (ProdutoSaida item : saidas) {
-            if (item.getValorVenda() != null) totalFaturamento += item.getValorVenda().doubleValue();
-        }
+        double totalItensEntrada = entradaRepo.findByFazendaIn(fazendas).stream()
+                .mapToDouble(i -> i.getQuantidade() != null ? i.getQuantidade().doubleValue() : 0).sum();
+        double totalFaturamento = saidaRepo.findByFazendaIn(fazendas).stream()
+                .mapToDouble(i -> i.getValorVenda() != null ? i.getValorVenda().doubleValue() : 0).sum();
 
         resumo.put("totalEntrada", totalItensEntrada);
         resumo.put("faturamento", totalFaturamento);
-
         return resumo;
+    }
+
+    // --- NOVOS ENDPOINTS FINANCEIROS ---
+
+    @GetMapping("/financeiro/entradas")
+    public List<FinanceiroEntrada> getFinanceiroEntradas(@RequestParam Integer userId) {
+        List<Fazenda> fazendas = getFazendasDoUsuario(userId);
+        if (fazendas.isEmpty()) return new ArrayList<>();
+        return finEntradaRepo.findByFazendaIn(fazendas);
+    }
+
+    @GetMapping("/financeiro/saidas")
+    public List<FinanceiroSaida> getFinanceiroSaidas(@RequestParam Integer userId) {
+        // OBS: Se sua classe chamar FinanceiroSaida (sem S no final), ajuste aqui
+        List<Fazenda> fazendas = getFazendasDoUsuario(userId);
+        if (fazendas.isEmpty()) return new ArrayList<>();
+        return finSaidaRepo.findByFazendaIn(fazendas);
     }
 
     private List<Map<String, Object>> formatarParaGrafico(Map<String, Double> mapaSoma) {

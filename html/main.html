@@ -5,14 +5,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Main - SIGA</title>
-
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
   <script src="../javascript/produto.js" defer></script>
   <script src="../javascript/auth.js" defer></script>
-
   <link href="../css/main.css" type="text/css" rel="stylesheet">
 </head>
 
@@ -20,12 +18,9 @@
 
   <nav class="navbar navbar-expand-lg navbar-light bg-transparent py-3 shadow-sm">
     <div class="container-fluid mx-4">
-      <a class="navbar-brand fw-bold text-success" href="../html/home.html">
-        <i class="fas fa-seedling"></i> SIGA
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+      <a class="navbar-brand fw-bold text-success" href="../html/home.html"><i class="fas fa-seedling"></i> SIGA</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span
+          class="navbar-toggler-icon"></span></button>
       <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
         <ul class="navbar-nav">
           <li class="nav-item"><a class="nav-link" href="../html/main.html">Dashboard</a></li>
@@ -42,11 +37,10 @@
 
   <div class="container-fluid mt-4">
     <div class="row">
-
       <aside class="col-lg-2 col-md-3 offset-lg-1">
         <div class="sidebar">
           <h5 class="sidebar-title">Ações</h5>
-          <a href="#" class="sidebar-button"><i class="fas fa-chart-line"></i> Relatório</a>
+          <a href="../html/financeiro.html" class="sidebar-button"><i class="fas fa-chart-pie"></i> Financeiro</a>
           <a href="#" class="sidebar-button"><i class="fas fa-cogs"></i> Configurações</a>
           <a href="#" class="sidebar-button"><i class="fas fa-users"></i> Usuários</a>
           <a href="../html/estoque.html" class="sidebar-button"><i class="fas fa-boxes"></i> Estoque</a>
@@ -56,11 +50,9 @@
       <main class="col-lg-8 col-md-9">
         <div class="content-panel">
           <h3>Dashboard</h3>
-          <p>Bem-vindo ao sistema SIGA! Aqui você pode acompanhar os relatórios de produção, acessar o estoque e
-            gerenciar usuários.</p>
+          <p>Visão geral da sua fazenda e produção.</p>
 
           <div class="row mt-4">
-
             <div class="col-md-6 mb-3">
               <div class="dashboard-card">
                 <i class="fas fa-boxes fa-2x text-primary"></i>
@@ -68,24 +60,48 @@
                 <p id="cardTotalEntrada" class="fs-4 fw-bold">Carregando...</p>
               </div>
             </div>
-
             <div class="col-md-6 mb-3">
               <div class="dashboard-card">
                 <i class="fas fa-sack-dollar fa-2x text-success"></i>
-                <h5>Faturamento Total</h5>
+                <h5>Faturamento (Vendas Produto)</h5>
                 <p id="cardFaturamento" class="fs-4 fw-bold">Carregando...</p>
               </div>
             </div>
-
           </div>
 
           <div class="row mt-4">
+            <div class="col-12">
+              <h5 class="text-muted">Visão Financeira</h5>
+            </div>
+
+            <div class="col-md-5 mb-4">
+              <div class="card shadow h-100">
+                <div class="card-header bg-white fw-bold"><i class="fas fa-chart-pie"></i> Balanço Geral</div>
+                <div class="card-body d-flex justify-content-center align-items-center" style="height: 300px;">
+                  <canvas id="graficoPizzaDash"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-7 mb-4">
+              <div class="card shadow h-100">
+                <div class="card-header bg-white fw-bold"><i class="fas fa-chart-line"></i> Fluxo de Caixa (Tempo)</div>
+                <div class="card-body" style="height: 300px;">
+                  <canvas id="graficoLinhaDash"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-12">
+              <h5 class="text-muted">Visão de Estoque</h5>
+            </div>
 
             <div class="col-md-6 mb-4">
               <div class="card shadow h-100">
-                <div class="card-header bg-primary text-white">
-                  <i class="fas fa-truck-loading"></i> Produtos Entrada (Total Qtd)
-                </div>
+                <div class="card-header bg-primary text-white"><i class="fas fa-truck-loading"></i> Produtos Entrada
+                  (Qtd)</div>
                 <div class="card-body" style="overflow-x: auto;">
                   <div class="chart-container" style="position: relative; height: 300px; width: 100%;">
                     <canvas id="graficoEntrada"></canvas>
@@ -96,9 +112,8 @@
 
             <div class="col-md-6 mb-4">
               <div class="card shadow h-100">
-                <div class="card-header bg-success text-white">
-                  <i class="fas fa-cash-register"></i> Produtos Saída (Total R$)
-                </div>
+                <div class="card-header bg-success text-white"><i class="fas fa-cash-register"></i> Produtos Saída
+                  (Valor)</div>
                 <div class="card-body" style="overflow-x: auto;">
                   <div class="chart-container" style="position: relative; height: 300px; width: 100%;">
                     <canvas id="graficoSaida"></canvas>
@@ -106,50 +121,36 @@
                 </div>
               </div>
             </div>
-
           </div>
+
         </div>
       </main>
-
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
-    // 1. Pega o ID exatamente como está no seu auth.js
     const usuarioId = localStorage.getItem("USUARIO_ID");
-
-    // Se não tiver ID, redireciona para login
     if (!usuarioId) {
-      alert("Sessão expirada. Faça login novamente.");
-      window.location.href = "../html/login.html"; // Ajuste se necessário
+      alert("Sessão expirada.");
+      window.location.href = "../html/login.html";
     }
 
-    // Função genérica que cria qualquer gráfico
-    async function criarGrafico(urlEndpoint, idCanvas, labelGrafico, corBarra) {
+    // --- 1. GRÁFICOS DE PRODUTO (MANTIDO) ---
+    async function criarGraficoProduto(urlEndpoint, idCanvas, labelGrafico, corBarra) {
       try {
-        // AQUI É O TRUQUE: Enviamos ?userId=... na URL
         const resposta = await fetch(`${urlEndpoint}?userId=${usuarioId}`);
-
-        if (!resposta.ok) throw new Error("Erro ao buscar dados de " + urlEndpoint);
-
+        if (!resposta.ok) return;
         const dados = await resposta.json();
 
         const nomes = dados.map(item => item.nome);
         const valores = dados.map(item => item.valor);
 
-        // Lógica de largura para muitos produtos
-        const numBarras = nomes.length;
         const canvasElement = document.getElementById(idCanvas);
-        const containerDiv = canvasElement.parentElement;
+        if (nomes.length > 10) canvasElement.parentElement.style.width = (nomes.length * 50) + "px";
 
-        if (numBarras > 10) {
-          containerDiv.style.width = (numBarras * 50) + "px";
-        }
-
-        const ctx = canvasElement.getContext('2d');
-        new Chart(ctx, {
+        new Chart(canvasElement.getContext('2d'), {
           type: 'bar',
           data: {
             labels: nomes,
@@ -161,46 +162,149 @@
               borderWidth: 1
             }]
           },
+          options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+        });
+      } catch (erro) { console.error(erro); }
+    }
+
+    // --- 2. NOVOS GRÁFICOS FINANCEIROS (SALDO ACUMULADO) ---
+    async function carregarGraficosFinanceiros() {
+      try {
+        const resEntradas = await fetch(`/api/dashboard/financeiro/entradas?userId=${usuarioId}`);
+        const resSaidas = await fetch(`/api/dashboard/financeiro/saidas?userId=${usuarioId}`);
+
+        const listaEntradas = await resEntradas.json();
+        const listaSaidas = await resSaidas.json();
+
+        // A) Totais para Pizza (Balanço Geral - Mantido)
+        const totalEntradas = listaEntradas.reduce((acc, item) => acc + item.valor, 0);
+        const totalSaidas = listaSaidas.reduce((acc, item) => acc + item.valor, 0);
+
+        // B) Cálculo do SALDO ACUMULADO (Linha do Tempo)
+        const mapaDiario = {};
+
+        // 1. Mapear as movimentações por dia
+        listaEntradas.forEach(item => {
+          const data = item.dataEntrada;
+          if (!mapaDiario[data]) mapaDiario[data] = 0;
+          mapaDiario[data] += item.valor; // Soma entrada
+        });
+
+        listaSaidas.forEach(item => {
+          const data = item.dataSaida;
+          if (!mapaDiario[data]) mapaDiario[data] = 0;
+          mapaDiario[data] -= item.valor; // Subtrai saída
+        });
+
+        // 2. Ordenar as datas (Crucial para o acumulado funcionar)
+        const datasOrdenadas = Object.keys(mapaDiario).sort();
+
+        // 3. Calcular o Acumulado (Soma o dia atual + saldo anterior)
+        let saldoAtual = 0;
+        const dadosAcumulados = [];
+
+        datasOrdenadas.forEach(data => {
+          const lucroDoDia = mapaDiario[data];
+          saldoAtual = saldoAtual + lucroDoDia; // A Mágica acontece aqui
+          dadosAcumulados.push(saldoAtual);
+        });
+
+        // 4. Formatar datas para o gráfico
+        const labelsData = datasOrdenadas.map(d => {
+          const partes = d.split('-');
+          return `${partes[2]}/${partes[1]}`;
+        });
+
+        // --- DESENHANDO OS GRÁFICOS ---
+
+        // Gráfico de Pizza (Mantido)
+        new Chart(document.getElementById('graficoPizzaDash').getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: ['Receitas', 'Despesas'],
+            datasets: [{
+              data: [totalEntradas, totalSaidas],
+              backgroundColor: ['#198754', '#dc3545'],
+              hoverOffset: 4
+            }]
+          },
+          options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        // Gráfico de Linha (SALDO ACUMULADO - LIMPO)
+        const ctxLinha = document.getElementById('graficoLinhaDash').getContext('2d');
+
+        new Chart(ctxLinha, {
+          type: 'line',
+          data: {
+            labels: labelsData,
+            datasets: [
+              {
+                label: 'Saldo Total Acumulado',
+                data: dadosAcumulados,
+
+                // Estilo da linha limpa
+                borderColor: '#0d6efd', // Azul padrão (Primary)
+                backgroundColor: '#0d6efd', // Cor da bolinha
+                borderWidth: 2,
+                tension: 0.1, // Linha mais reta (0.4 seria curva)
+                fill: false, // SEM PREENCHIMENTO (Fundo transparente)
+                pointRadius: 4,
+                pointHoverRadius: 6
+              }
+            ]
+          },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            scales: { y: { beginAtZero: true } }
+            interaction: {
+              intersect: false,
+              mode: 'index',
+            },
+            scales: {
+              y: {
+                beginAtZero: false, // Permite começar negativo se o saldo for devedor
+                grid: { color: '#e9ecef' },
+                ticks: {
+                  callback: function (value) {
+                    return 'R$ ' + value;
+                  }
+                }
+              }
+            },
+            plugins: {
+              legend: { display: true },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    let valor = context.raw;
+                    return 'Saldo: ' + valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                  }
+                }
+              }
+            }
           }
         });
 
-      } catch (erro) {
-        console.error(erro);
-      }
+      } catch (erro) { console.error("Erro gráficos financeiros:", erro); }
     }
 
-    // Função de Resumo (Cards)
+    // --- 3. RESUMO (CARDS) ---
     async function carregarResumo() {
       try {
-        // Enviamos o ID aqui também
         const resposta = await fetch(`/api/dashboard/resumo?userId=${usuarioId}`);
-        if (!resposta.ok) throw new Error("Erro ao buscar resumo");
-
+        if (!resposta.ok) return;
         const dados = await resposta.json();
-
-        // Atualiza os cards
-        const totalEntradaElement = document.getElementById('cardTotalEntrada');
-        if (totalEntradaElement) totalEntradaElement.innerText = dados.totalEntrada;
-
-        const faturamentoElement = document.getElementById('cardFaturamento');
-        if (faturamentoElement) {
-          const valorFormatado = dados.faturamento.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-          faturamentoElement.innerText = valorFormatado;
-        }
-
-      } catch (erro) {
-        console.error(erro);
-      }
+        document.getElementById('cardTotalEntrada').innerText = dados.totalEntrada;
+        document.getElementById('cardFaturamento').innerText = dados.faturamento.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      } catch (erro) { console.error(erro); }
     }
 
-    // Inicia tudo passando o ID automaticamente
+    // --- INICIALIZAÇÃO ---
     if (usuarioId) {
-      criarGrafico('/api/dashboard/entrada', 'graficoEntrada', 'Qtd Comprada', '#0d6efd');
-      criarGrafico('/api/dashboard/saida', 'graficoSaida', 'Valor Vendido (R$)', '#198754');
+      criarGraficoProduto('/api/dashboard/entrada', 'graficoEntrada', 'Qtd Comprada', '#0d6efd');
+      criarGraficoProduto('/api/dashboard/saida', 'graficoSaida', 'Valor Vendido (R$)', '#198754');
+      carregarGraficosFinanceiros();
       carregarResumo();
     }
   </script>
