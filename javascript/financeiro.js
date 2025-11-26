@@ -151,28 +151,32 @@ async function salvarTransacao() {
     let url = "";
 
     if (tipo === "ENTRADA") {
-        // --- CONFIGURAÇÃO PARA ENTRADA FINANCEIRA ---
-        payload.tipoEntrada = "VENDA"; // Ajuste conforme seu Enum no Java se necessário
+        // --- FINANCEIRO ENTRADA (Receita) ---
+        payload.tipoEntrada = "VENDA"; // ✅ Correto (existe no seu Java)
         payload.dataEntrada = data;
-        
-        // 🛑 AQUI ESTÁ A MÁGICA: Usando "idProdutoSaida" igual ao Java
         payload.produtoSaida = { idProdutoSaida: parseInt(produtoId) }; 
         
         url = "http://localhost:8080/api/financeiro/entradas";
 
     } else {
-        // --- CONFIGURAÇÃO PARA SAÍDA FINANCEIRA ---
-        payload.tipoSaida = "COMPRA"; // Ajuste conforme seu Enum
+        // --- FINANCEIRO SAÍDA (Despesa) ---
+        
+        // 🚨 AQUI ESTAVA O ERRO: "COMPRA" não existe no seu Enum. 
+        // Mudei para "CUSTO" (ou use "GASTO" / "INVESTIMENTO")
+        payload.tipoSaida = "CUSTO"; 
+        
         payload.dataSaida = data;
 
-        // 🛑 AQUI ESTÁ A MÁGICA: Usando "idProdutosEntrada" igual ao Java
+        // ✅ CORREÇÃO DO NOME DO CAMPO:
+        // No Java é: private ProdutosEntrada produtoEntrada; (Singular)
+        // No objeto dentro: idProdutosEntrada (Conforme seu model ProdutosEntrada)
         payload.produtoEntrada = { idProdutosEntrada: parseInt(produtoId) };
         
         url = "http://localhost:8080/api/financeiro/saidas";
     }
 
     try {
-        console.log("Enviando Payload:", JSON.stringify(payload)); // Para debug no console do navegador
+        console.log("Enviando Payload:", JSON.stringify(payload)); 
 
         const resp = await fetch(url, {
             method: "POST",
@@ -191,7 +195,7 @@ async function salvarTransacao() {
             mudarTipoTransacao(); 
             carregarFinanceiro();
         } else {
-            alert("Erro ao salvar.");
+            alert("Erro ao salvar. Verifique o console.");
             console.log(await resp.text());
         }
     } catch (err) {
