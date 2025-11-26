@@ -337,6 +337,6 @@ function formatarData(data) {
 
 async function deletarItem(tipo, id) {
     if (!confirm("Excluir item?")) return;
-    await fetch(`http://localhost:8080/api/financeiro/${tipo}/${id}`, { method: "DELETE" });
+    await fetch(`http://localhost:8080/api/financeiro/${tipo}s/${id}`, { method: "DELETE" });
     carregarFinanceiro();
 }

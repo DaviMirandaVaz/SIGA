@@ -36,15 +36,15 @@ public class Fazenda {
     private List<UsuarioFazenda> usuarioFazendas;
 
     // 🔹 Relações com produtos
-    @OneToMany(mappedBy = "fazenda", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "fazenda", fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"fazenda"})
     private List<ProdutosEntrada> produtosEntrada;
 
-    @OneToMany(mappedBy = "fazenda", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "fazenda", fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"fazenda"})
     private List<ProdutoIntermedio> produtosIntermedios;
 
-    @OneToMany(mappedBy = "fazenda", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "fazenda", fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"fazenda"})
     private List<ProdutoSaida> produtosSaida;
 

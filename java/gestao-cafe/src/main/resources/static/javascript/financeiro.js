@@ -269,7 +269,7 @@ async function renderizarEntradas(lista) {
             <td>R$ ${parseFloat(e.valor).toFixed(2)}</td>
             <td>${e.fazenda?.nome || "-"}</td>
             <td>${e.produtoSaida?.nomeProduto || "-"}</td>
-            <td><button class="btn btn-sm btn-danger" onclick="deletarItem('entradas', ${e.id})"><i class="fas fa-trash"></i></button></td>
+            <td><button class="btn btn-sm btn-danger" onclick="deletarItem('entradas', ${e.idFinanceiroEntrada})"><i class="fas fa-trash"></i></button></td>
         `;
         tabela.appendChild(tr);
     });
@@ -300,7 +300,7 @@ async function renderizarSaidas(lista) {
             <td>R$ ${parseFloat(s.valor).toFixed(2)}</td>
             <td>${s.fazenda?.nome || "-"}</td>
             <td>${s.produtoEntrada?.nomeProduto || "-"}</td>
-            <td><button class="btn btn-sm btn-danger" onclick="deletarItem('saidas', ${s.id})"><i class="fas fa-trash"></i></button></td>
+            <td><button class="btn btn-sm btn-danger" onclick="deletarItem('saidas', ${s.idFinanceiroSaida})"><i class="fas fa-trash"></i></button></td>
         `;
         tabela.appendChild(tr);
     });
@@ -337,6 +337,9 @@ function formatarData(data) {
 
 async function deletarItem(tipo, id) {
     if (!confirm("Excluir item?")) return;
-    await fetch(`http://localhost:8080/api/financeiro/${tipo}/${id}`, { method: "DELETE" });
+    await fetch(`http://localhost:8080/api/financeiro/${tipo}/${id}`, {
+        method: "DELETE"
+    });
     carregarFinanceiro();
 }
+
