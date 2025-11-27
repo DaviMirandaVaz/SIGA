@@ -227,27 +227,28 @@ function renderizarProdutos(produtos) {
 
 // 🗑️ Excluir produto
 async function excluirProduto(tipo, id) {
-  if (!confirm("Tem certeza que deseja excluir este produto?")) return;
+  if (!confirm("Desativar este produto?")) return;
 
   const url = tipo === "entrada"
-    ? `http://localhost:8080/api/produtosEntrada/${id}`
+    ? `http://localhost:8080/api/produtosEntrada/${id}/inativar`
     : tipo === "intermedio"
-      ? `http://localhost:8080/api/produtosIntermedios/${id}`
-      : `http://localhost:8080/api/produtosSaida/${id}`;
+      ? `http://localhost:8080/api/produtosIntermedios/${id}/inativar`
+      : `http://localhost:8080/api/produtosSaida/${id}/inativar`;
 
   try {
-    const resp = await fetch(url, { method: "DELETE" });
+    const resp = await fetch(url, { method: "PUT" });
     if (resp.ok) {
-      alert("Produto excluído com sucesso!");
+      alert("Produto desativado!");
       carregarTodosProdutos();
     } else {
-      alert("Erro ao excluir produto.");
+      alert("Erro ao desativar produto.");
     }
   } catch (err) {
-    console.error("Erro ao excluir:", err);
-    alert("Erro de conexão ao excluir produto.");
+    console.error("Erro ao inativar:", err);
+    alert("Erro de conexão ao desativar produto.");
   }
 }
+
 
 
 // ✏️ Abrir modal de edição

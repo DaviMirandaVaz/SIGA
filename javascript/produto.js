@@ -25,40 +25,48 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // carrega fazendas do usuário
   async function carregarFazendas() {
-  try {
-    const usuarioId = localStorage.getItem("USUARIO_ID");
+    try {
+        const usuarioId = localStorage.getItem("USUARIO_ID");
 
-    if (!usuarioId) {
-      console.warn("⚠️ USUARIO_ID não encontrado no localStorage.");
-      return;
+        if (!usuarioId) {
+            console.warn("⚠️ USUARIO_ID não encontrado no localStorage.");
+            return;
+        }
+
+        // Pegando o select CORRETO pelo ID correto
+        const fazendaSelect = document.getElementById("fazenda_select");
+
+        // Se não existir, evita erro silencioso
+        if (!fazendaSelect) {
+            console.error("❌ ERRO: Select #fazenda_select NÃO encontrado no HTML.");
+            return;
+        }
+
+        const resp = await fetch(`http://localhost:8080/api/usuario-fazenda/porUsuario/${usuarioId}`);
+
+        if (!resp.ok) {
+            throw new Error(`Erro ao buscar vínculos: ${resp.status}`);
+        }
+
+        const vinculos = await resp.json();
+
+        // Limpa o select mantendo o placeholder
+        fazendaSelect.innerHTML = `<option value="" disabled selected>Selecione uma fazenda</option>`;
+
+        // Preenche as fazendas corretas
+        vinculos.forEach(v => {
+            if (v.fazenda) {
+                const opt = document.createElement("option");
+                opt.value = v.fazenda.idFazenda;
+                opt.textContent = `${v.fazenda.nome} - ${v.fazenda.localizacao || 'Local não informado'}`;
+                fazendaSelect.appendChild(opt);
+            }
+        });
+
+    } catch (e) {
+        console.error('❌ Erro ao carregar fazendas:', e);
+        alert('Erro ao carregar fazendas vinculadas ao usuário.');
     }
-
-    // 🔹 Busca apenas fazendas do usuário logado
-    const resp = await fetch(`http://localhost:8080/api/fazendas/porDono/${usuarioId}`);
-
-    if (!resp.ok) {
-      throw new Error(`Erro ao buscar fazendas: ${resp.status}`);
-    }
-
-    const fazendas = await resp.json();
-
-    // 🔹 Limpa opções antigas (mantém o placeholder)
-    const placeholder = fazendaSelect.querySelector('option[disabled]');
-    fazendaSelect.innerHTML = '';
-    if (placeholder) fazendaSelect.appendChild(placeholder);
-
-    // 🔹 Preenche o <select> com as fazendas do usuário
-    fazendas.forEach(f => {
-      const opt = document.createElement('option');
-      opt.value = f.idFazenda;
-      opt.textContent = `${f.nome} - ${f.localizacao || 'Local não informado'}`;
-      fazendaSelect.appendChild(opt);
-    });
-
-  } catch (e) {
-    console.error('❌ Erro ao carregar fazendas:', e);
-    alert('Erro ao carregar fazendas. Cadastre uma fazenda primeiro.');
-  }
 }
 
   await carregarFazendas();
